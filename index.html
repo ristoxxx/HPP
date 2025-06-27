@@ -3,7 +3,7 @@ File: index2.html
 Created Date: Friday June 27th 2025 06:29:04
 Author: ristoxxx@github.com
 -----
-Last Modified: Friday June 27th 2025 07:07:49
+Last Modified: Friday June 27th 2025 07:54:41
 Modified By: ristoxxx@github.com
 -----
 Copyright (c) 2025 ristoxxx@github.com
@@ -31,9 +31,9 @@ Copyright (c) 2025 ristoxxx@github.com
   <div id="loads">
     <h3>Kuluttajat</h3>
     <div>
-      <label>Nimi: <input class="ldName" value="Valo"></label>
-      <label>Ampeeri: <input class="ldAmp" type="number" value="2"></label>
-      <label>h/pv: <input class="ldHour" type="number" value="5"></label>
+      <label>Nimi: <input class="ldName" value="Valo" style="width: 20%;"></label>
+      <label>Ampeeri: <input class="ldAmp" type="number" value="2" style="width: 5%;"></label>
+      <label>h/pv: <input class="ldHour" type="number" value="5"style="width: 5%;"></label>
       <button onclick="removeLoad(this)">Poista</button>
     </div>
   </div>
@@ -46,14 +46,14 @@ Copyright (c) 2025 ristoxxx@github.com
   <h2>Pilssipumpun laskuri</h2>
   <label>Käynti (sek): <input type="number" id="pumpRun" value="5"></label><br>
   <label>Virta (A): <input type="number" id="pumpAmp" value="3"></label><br>
-  <label>Tauko (min): <input type="number" id="pumpBreak" value="55"></label><br>
+  <label>Tauko (min): <input type="number" id="pumpBreak" value="5"></label><br>
   <button onclick="calcPump()">Laske pumppu</button>
   <p id="pumpResult"></p>
 </div>
 <div class="section">
-<!-- HTML: uusi syöte jännitteelle ja tuloskapasiteetille -->
+<h2>Varausprosentti</h2>
 <label>Akun jännite (V): <input type="number" id="batVolt" step="0.01" value="12.60"></label>
-<button onclick="calcVoltageSoC()">Muunna varausprosentiksi</button>
+<button onclick="calcVoltageSoC()">Muunna</button>
 <p id="voltageResult"></p>
 </div>
 
