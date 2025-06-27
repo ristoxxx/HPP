@@ -1,0 +1,137 @@
+<!--
+File: index2.html
+Created Date: Friday June 27th 2025 06:29:04
+Author: ristoxxx@github.com
+-----
+Last Modified: Friday June 27th 2025 07:07:49
+Modified By: ristoxxx@github.com
+-----
+Copyright (c) 2025 ristoxxx@github.com
+-->
+
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <title>Akkulaskuri ja pilssipumppu</title>
+  <style>
+    body { font-family: sans-serif; max-width:600px; margin:auto; }
+    .section { margin-top:20px; padding:10px; border:1px solid #ccc; }
+    input[type=number] { width:80px; }
+  </style>
+</head>
+<body>
+
+<h1>Akkulaskuri & Pilssipumppu</h1>
+
+<div class="section">
+  <h2>Akun kokonaiskäyttö</h2>
+  <label>Akun kapasiteetti (Ah): <input type="number" id="batCap" value="100"></label><br>
+  <label>Minimivaraus (%): <input type="number" id="minPct" value="50"></label><br>
+  <div id="loads">
+    <h3>Kuluttajat</h3>
+    <div>
+      <label>Nimi: <input class="ldName" value="Valo"></label>
+      <label>Ampeeri: <input class="ldAmp" type="number" value="2"></label>
+      <label>h/pv: <input class="ldHour" type="number" value="5"></label>
+      <button onclick="removeLoad(this)">Poista</button>
+    </div>
+  </div>
+  <button onclick="addLoad()">Lisää kuluttaja</button><br>
+  <button onclick="calcBattery()">Laske akut</button>
+  <p id="batResult"></p>
+</div>
+
+<div class="section">
+  <h2>Pilssipumpun laskuri</h2>
+  <label>Käynti (sek): <input type="number" id="pumpRun" value="5"></label><br>
+  <label>Virta (A): <input type="number" id="pumpAmp" value="3"></label><br>
+  <label>Tauko (min): <input type="number" id="pumpBreak" value="55"></label><br>
+  <button onclick="calcPump()">Laske pumppu</button>
+  <p id="pumpResult"></p>
+</div>
+<div class="section">
+<!-- HTML: uusi syöte jännitteelle ja tuloskapasiteetille -->
+<label>Akun jännite (V): <input type="number" id="batVolt" step="0.01" value="12.60"></label>
+<button onclick="calcVoltageSoC()">Muunna varausprosentiksi</button>
+<p id="voltageResult"></p>
+</div>
+
+<script>
+function addLoad(){
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <label>Nimi: <input class="ldName" value="Laite"></label>
+    <label>Ampeeri: <input class="ldAmp" type="number" value="1"></label>
+    <label>h/pv: <input class="ldHour" type="number" value="1"></label>
+    <button onclick="removeLoad(this)">Poista</button>`;
+  document.getElementById('loads').appendChild(div);
+}
+
+function removeLoad(btn){
+  btn.parentElement.remove();
+}
+
+function calcBattery(){
+  const cap = parseFloat(document.getElementById('batCap').value);
+  const minPct = parseFloat(document.getElementById('minPct').value)/100;
+  let totalAh = 0;
+  document.querySelectorAll('#loads div').forEach(div => {
+    const a = parseFloat(div.querySelector('.ldAmp').value);
+    const h = parseFloat(div.querySelector('.ldHour').value);
+    totalAh += a*h;
+  });
+  const usable = cap * (1 - minPct);
+  const hours = (totalAh>0 ? (usable/totalAh).toFixed(2) : '∞');
+  document.getElementById('batResult').textContent =
+    `Kulutus päivässä: ${totalAh.toFixed(2)} Ah. Akun käyttöaika: ${hours} Vuorokautta.`;
+}
+
+function calcPump(){
+  const run = parseFloat(document.getElementById('pumpRun').value*0.0166667);
+  const amp = parseFloat(document.getElementById('pumpAmp').value);
+  const brk = parseFloat(document.getElementById('pumpBreak').value);
+  const cycles = 1440/(run+brk);
+  const dailyAh = (cycles*run*amp/60).toFixed(2);
+  document.getElementById('pumpResult').textContent =
+    `Arvio: ${dailyAh} Ah amppeerituntia per vuorokausi.`;
+}
+
+// JS: jännite → jäljellä oleva varausprosentti (SOC)
+function calcVoltageSoC() {
+  const v = parseFloat(document.getElementById('batVolt').value);
+  // 12 V AGM-akku jännite–varaustilakartta
+  const table = [
+    { soc:100, volt:12.70 },
+    { soc:90, volt:12.50 },
+    { soc:80, volt:12.42 },
+    { soc:70, volt:12.32 },
+    { soc:60, volt:12.20 },
+    { soc:50, volt:12.06 },
+    { soc:40, volt:11.90 },
+    { soc:30, volt:11.75 },
+    { soc:20, volt:11.58 },
+    { soc:10, volt:11.31 },
+    { soc:0, volt:10.50 }
+  ];
+  let soc = null;
+  for (let i = 0; i < table.length - 1; i++) {
+    const hi = table[i], lo = table[i+1];
+    if (v <= hi.volt && v >= lo.volt) {
+      soc = lo.soc + (hi.soc - lo.soc) * (v - lo.volt) / (hi.volt - lo.volt);
+      break;
+    }
+  }
+  if (soc === null) {
+    soc = v >= table[0].volt ? 100 : v <= table[table.length-1].volt ? 0 : null;
+  }
+  const msg = (soc !== null)
+    ? `Arvioitu kapasiteetti: ${soc.toFixed(1)} %`
+    : 'Jännite kartan ulkopuolella, tarkista akun tila.';
+  document.getElementById('voltageResult').textContent = msg;
+}
+
+</script>
+
+</body>
+</html>
